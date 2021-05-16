@@ -1,12 +1,10 @@
-import logging
 from flask import Flask, render_template, request
-
+from database import get_database_tools
+import logging
 import psycopg2
 from psycopg2 import Error
-from private.data import db_login
 
 app = Flask(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 @app.route('/')
@@ -79,13 +77,9 @@ def list_orders():
 
 
 if __name__ == '__main__':
-    try:
-        connection = psycopg2.connect(user=db_login['user'], password=db_login['password'],
-                                      host=db_login['host'], port=db_login['port'],
-                                      database=db_login['database'])
-        cursor = connection.cursor()
-        if connection:
-            logging.info("app indul...")
-            app.run(debug=True)
-    except (Exception, Error) as error:
-        print("Connection Error: ", error)
+    toolkit = get_database_tools()
+    if toolkit is not None:
+        connection = toolkit['connection']
+        cursor = toolkit['cursor']
+        logging.info("app indul...")
+        app.run(debug=True)
