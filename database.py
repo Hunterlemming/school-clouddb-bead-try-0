@@ -26,9 +26,11 @@ def access_database():
         return None
 
 
+# noinspection SqlResolve
 def get_orders():
+    sql = "select * from last_orders;"
     try:
-        _cursor.execute("select * from last_orders;")
+        _cursor.execute(sql)
         order_rows = _cursor.fetchall()
         order_list = []
         for row in order_rows:
@@ -50,9 +52,11 @@ def get_orders():
         return None
 
 
+# noinspection SqlResolve
 def get_products():
+    sql = "select productid, productname from products order by productname;"
     try:
-        _cursor.execute("select productid, productname from products order by productname;")
+        _cursor.execute(sql)
         product_rows = _cursor.fetchall()
         product_list = []
         for row in product_rows:
@@ -68,9 +72,11 @@ def get_products():
         return None
 
 
+# noinspection SqlResolve
 def get_customers():
+    sql = "select customerid, companyname from customers order by companyname;"
     try:
-        _cursor.execute("select customerid, companyname from customers order by companyname;")
+        _cursor.execute(sql)
         customer_rows = _cursor.fetchall()
         customer_list = []
         for row in customer_rows:
@@ -86,9 +92,10 @@ def get_customers():
         return None
 
 
+# noinspection SqlResolve
 def set_new_order(product, quantity, costumer):
+    sql = "select new_order(%s, %s, %s);"
     try:
-        sql = "select new_order(%s, %s, %s);"
         _cursor.execute(sql, (product, quantity, costumer))
         row = _cursor.fetchone()
         success = row[0]
