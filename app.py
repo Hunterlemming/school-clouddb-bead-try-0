@@ -1,8 +1,6 @@
 from flask import Flask, render_template, request
-from database import get_database_tools, list_orders
+from database import access_database, get_orders, get_products, get_customers, set_new_order
 import logging
-import psycopg2
-from psycopg2 import Error
 
 app = Flask(__name__)
 
@@ -10,51 +8,20 @@ app = Flask(__name__)
 @app.route('/')
 @app.route('/order_form', methods=['POST', 'GET'])
 def order_form():
-    try:
-        cursor.execute("select productid, productname from products order by productname;")
-        product_rows = cursor.fetchall()
-        product_list = []
-        for row in product_rows:
-            product_list.append(
-                {
-                    'productid': row[0],
-                    'productname': row[1]
-                }
-            )
-        # customer combo feltöltése
-        cursor.execute("select customerid, companyname from customers order by companyname;")
-        cust_rows = cursor.fetchall()
-        cust_list = []
-        for row in cust_rows:
-            cust_list.append(
-                {
-                    'customerid': row[0],
-                    'companyname': row[1]
-                }
-            )
-        return render_template('order_form.html', product_records=product_list, cust_records=cust_list)
-    except (Exception, Error) as ex:
-        logging.error("Query error: ", ex)
+    return render_template('order_form.html', product_records=get_products(), cust_records=get_customers())
 
 
 @app.route('/order_proc', methods=['POST', 'GET'])
 def order_proc():
-    try:
-        if request.method == 'POST':
-            sql = "select new_order(%s, %s, %s);"
-            with connection:
-                with connection.cursor() as c:
-                    c.execute(sql, (request.form['product'], request.form['qt'], request.form['customer'],))
-                    row = c.fetchone()
-                    return render_template('order_list.html', success=row[0], order_records=list_orders())
-        else:
-            return render_template('order_list.html', order_records=list_orders())
-    except (Exception, Error) as ex:
-        logging.error("Query or Order error: ", ex)
+    if request.method == 'POST':
+        success = set_new_order(request.form['product'], request.form['qt'], request.form['customer'])
+        return render_template('order_list.html', success=success, order_records=get_orders())
+    else:
+        return render_template('order_list.html', order_records=get_orders())
 
 
 if __name__ == '__main__':
-    toolkit = get_database_tools()
+    toolkit = access_database()
     if toolkit is not None:
         connection = toolkit['connection']
         cursor = toolkit['cursor']
