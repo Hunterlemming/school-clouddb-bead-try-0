@@ -5,7 +5,7 @@ from private.data import db_login
 
 logging.basicConfig(level=logging.INFO)
 
-
+_schema = "try_0"
 _cursor = None
 
 
@@ -15,20 +15,18 @@ def access_database():
     try:
         connection = psycopg2.connect(user=db_login['user'], password=db_login['password'],
                                       host=db_login['host'], port=db_login['port'],
-                                      database=db_login['database'])
+                                      database=db_login['database'],
+                                      )
         _cursor = connection.cursor()
-        return {
-            "connection": connection,
-            "cursor": _cursor
-        }
+        return True
     except (Exception, Error) as ex:
         logging.error("Connection Error: ", ex)
-        return None
+        return False
 
 
 # noinspection SqlResolve
 def get_orders():
-    sql = "select * from last_orders;"
+    sql = f"""select * from {_schema}."last_orders";"""
     try:
         _cursor.execute(sql)
         order_rows = _cursor.fetchall()
@@ -54,7 +52,7 @@ def get_orders():
 
 # noinspection SqlResolve
 def get_products():
-    sql = "select productid, productname from products order by productname;"
+    sql = f"""select productid, productname from {_schema}."Products" order by productname;"""
     try:
         _cursor.execute(sql)
         product_rows = _cursor.fetchall()
@@ -74,7 +72,7 @@ def get_products():
 
 # noinspection SqlResolve
 def get_customers():
-    sql = "select customerid, companyname from customers order by companyname;"
+    sql = f"""select customerid, companyname from {_schema}."Customers" order by companyname;"""
     try:
         _cursor.execute(sql)
         customer_rows = _cursor.fetchall()

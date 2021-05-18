@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request
 from database import access_database, get_orders, get_products, get_customers, set_new_order
-import logging
 
 app = Flask(__name__)
 
@@ -20,10 +19,16 @@ def order_proc():
         return render_template('order_list.html', order_records=get_orders())
 
 
+def temp_db_test():
+    products = get_products()
+    for product in products:
+        print(product)
+
+
 if __name__ == '__main__':
-    toolkit = access_database()
-    if toolkit is not None:
-        connection = toolkit['connection']
-        cursor = toolkit['cursor']
-        logging.info("app indul...")
+    connection_was_a_success = access_database()
+    temp_db_test()
+    """
+    if connection_was_a_success:
         app.run(debug=True)
+    """

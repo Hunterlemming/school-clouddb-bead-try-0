@@ -15,7 +15,7 @@
 		<form action="/order_proc" method="POST">
 			<div class="form-group">
                 <label for="select_product">Terméknév: </label>
-                <select class="form-control" id="select_product", name="product">
+                <select class="form-control" id="select_product" name="product">
                     {% for rec in product_records %}
                         <option value= {{ rec.productid }} > {{ rec.productname }} </option>
                     {% endfor %}
@@ -23,7 +23,7 @@
 			</div>
 			<div class="form-group">
                 <label for="select_cust">Vásárló: </label>
-                <select class="form-control" id="select_cust", name="customer">
+                <select class="form-control" id="select_cust" name="customer">
                     {% for rec in cust_records %}
                         <option value= {{ rec.customerid }} > {{ rec.companyname }} </option>
                     {% endfor %}
@@ -31,7 +31,7 @@
 			</div>
 			<div class="form-group">
 			    <label for="text_qt">Mennyiség: </label>
-			    <input class="form-control" type="text" id="text_qt", name="qt">
+			    <input class="form-control" type="text" id="text_qt" name="qt">
 			</div>
 			<button type="submit" class="btn btn-primary">Megrendelés indítása</button>
         </form>
