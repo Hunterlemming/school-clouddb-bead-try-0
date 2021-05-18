@@ -60,7 +60,7 @@ INSERT INTO try_0."Customers"  (CustomerID, FirstName, LastName, Country, Balanc
 create sequence try_0."seq_orders" start 1 increment 1;
 CREATE TABLE try_0."Orders"(
 	OrderID integer NOT NULL,
-	CustomerID nchar(5) NOT NULL references customers(customerid),
+	CustomerID nchar(5) NOT NULL references try_0."Customers"(customerid),
 	OrderDate timestamp without time zone DEFAULT now()::timestamp NULL,
 	ShipName varchar(40) NULL,
 	ShipAddress varchar(60) NULL,
@@ -80,8 +80,8 @@ CREATE TABLE try_0."Orders"(
 
 -- OrderDetails
 CREATE TABLE try_0."OrderDetails"(
-	OrderID int NOT NULL references Orders(OrderID),
-	ProductID int NOT NULL references Products(ProductID),
+	OrderID int NOT NULL references try_0."Orders"(OrderID),
+	ProductID int NOT NULL references try_0."Products"(ProductID),
 	UnitPrice money NOT NULL,
 	Quantity smallint NOT NULL check(Quantity >= 0),
  CONSTRAINT PK_Order_Details PRIMARY KEY  
@@ -97,7 +97,7 @@ CREATE TABLE try_0."OrderDetails"(
 -- ============== VIEWS ===============
 
 -- Last 5 Orders
-create view try_0."last_orders" as
+create or replace view try_0."last_orders" as
 select o.orderdate::timestamp(0) without time zone AS orderdate, c.firstname, c.lastname, c.country, c.balance, p.productname, od.quantity, od.quantity * od.unitprice AS value, p.unitsinstock
 from try_0."Products" p join try_0."OrderDetails" od on p.productid=od.productid
 	join try_0."Orders" o on o.orderid=od.orderid
@@ -113,17 +113,17 @@ create or replace function try_0."new_order" (var_productid integer, var_quantit
 $$
 declare var_stock integer; var_unitprice money; var_balance money; var_orderid int;
 begin  
-	select unitsinstock, unitprice into var_stock, var_unitprice from try_0."products" where productid = var_productid;
-	select balance into var_balance from try_0."customers" where customerid = var_custid;
-	if var_quantity * var_unitprice > var_balance or var_stock < var_quantity then 
+	select unitsinstock, unitprice into var_stock, var_unitprice from try_0."Products" where productid = var_productid;
+	select balance into var_balance from try_0."Customers" where customerid = var_custid;
+	if var_quantity * var_unitprice > var_balance or var_stock < var_quantity then
 		raise notice 'Készlet vagy egyenleg hiba';
 		return 1;
-	else 
-		update customers set balance = balance - var_quantity * var_unitprice where customerid = var_custid;
+	else
+		update try_0."Customers" set balance = balance - var_quantity * var_unitprice where customerid = var_custid;
 		var_orderid := nextval('seq_orders');
-		insert into try_0."orders" (orderid, customerid) values (var_orderid, var_custid);
-		insert into try_0."OrderDetails" (orderid, productid, unitprice, quantity, discount) values (var_orderid, var_productid, var_unitprice, var_quantity, 0);
-		update try_0."products" set unitsinstock = unitsinstock - var_quantity where productid = var_productid;
+		insert into try_0."Orders" (orderid, customerid) values (var_orderid, var_custid);
+		insert into try_0."OrderDetails" (orderid, productid, unitprice, quantity) values (var_orderid, var_productid, var_unitprice, var_quantity);
+		update try_0."Products" set unitsinstock = unitsinstock - var_quantity where productid = var_productid;
 		return 0;	
 	end if;
 end;

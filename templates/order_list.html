@@ -23,7 +23,8 @@
             <thead>
                 <tr>
                     <th>Dátum</th>
-                    <th>Vásárló</th>
+                    <th>Keresztnév</th>
+                    <th>Vezetéknév</th>
                     <th>Ország</th>
                     <th>Egyenleg most</th>
                     <th>Termék</th>
@@ -36,7 +37,8 @@
                 {% for rec in order_records %}
                     <tr>
                         <td>{{ rec.date }}</td>
-                        <td>{{ rec.companyname }}</td>
+                        <td>{{ rec.firstname }}</td>
+                        <td>{{ rec.lastname }}</td>
                         <td>{{ rec.country }}</td>
                         <td>{{ rec.balance }}</td>
                         <td>{{ rec.productname }}</td>

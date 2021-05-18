@@ -35,19 +35,20 @@ def get_orders():
             order_list.append(
                 {
                     'date': row[0],
-                    'companyname': row[1],
-                    'country': row[2],
-                    'balance': row[3],
-                    'productname': row[4],
-                    'quantity': row[5],
-                    'value': row[6],
-                    'unitsinstock': row[7]
+                    'firstname': row[1],
+                    'lastname': row[2],
+                    'country': row[3],
+                    'balance': row[4],
+                    'productname': row[5],
+                    'quantity': row[6],
+                    'value': row[7],
+                    'unitsinstock': row[8]
                  }
             )
         return order_list
     except (Exception, Error) as ex:
         logging.error("Order-Query Error: ", ex)
-        return None
+        return []
 
 
 # noinspection SqlResolve
@@ -67,12 +68,12 @@ def get_products():
         return product_list
     except (Exception, Error) as ex:
         logging.error("Product-Query error: ", ex)
-        return None
+        return []
 
 
 # noinspection SqlResolve
 def get_customers():
-    sql = f"""select customerid, companyname from {_schema}."Customers" order by companyname;"""
+    sql = f"""select customerid, firstname, lastname from {_schema}."Customers" order by firstname;"""
     try:
         _cursor.execute(sql)
         customer_rows = _cursor.fetchall()
@@ -81,18 +82,18 @@ def get_customers():
             customer_list.append(
                 {
                     'customerid': row[0],
-                    'companyname': row[1]
+                    'companyname': f"{row[1]} {row[2]}"
                 }
             )
         return customer_list
     except (Exception, Error) as ex:
         logging.error("Customer-Query error: ", ex)
-        return None
+        return []
 
 
 # noinspection SqlResolve
 def set_new_order(product, quantity, costumer):
-    sql = "select new_order(%s, %s, %s);"
+    sql = """select try_0."new_order"(%s, %s, %s);"""
     try:
         _cursor.execute(sql, (product, quantity, costumer))
         row = _cursor.fetchone()

@@ -20,15 +20,13 @@ def order_proc():
 
 
 def temp_db_test():
-    products = get_products()
+    products = get_customers()
     for product in products:
         print(product)
 
 
 if __name__ == '__main__':
     connection_was_a_success = access_database()
-    temp_db_test()
-    """
+    # temp_db_test()
     if connection_was_a_success:
         app.run(debug=True)
-    """
