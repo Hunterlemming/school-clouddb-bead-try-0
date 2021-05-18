@@ -91,6 +91,18 @@ def get_customers():
         return []
 
 
+def check_order_possibility(product, quantity, customer):
+    sql = """select try_0."check_order_possibility"(%s, %s, %s);"""
+    try:
+        _cursor.execute(sql, (product, quantity, customer))
+        row = _cursor.fetchone()
+        success = row[0] == 0
+        return success
+    except (Exception, Error) as ex:
+        logging.error("Query or Order error: ", ex)
+        return False
+
+
 # noinspection SqlResolve
 def set_new_order(product, quantity, costumer):
     sql = """select try_0."new_order"(%s, %s, %s);"""

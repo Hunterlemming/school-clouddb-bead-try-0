@@ -11,7 +11,7 @@ CREATE SCHEMA try_0
 -- Products
 
 CREATE TABLE try_0."Products"(
-	ProductID int NOT NULL, --figyelem!
+	ProductID int NOT NULL,
 	ProductName varchar(40) NOT NULL,
 	PublisherID int NULL,
 	PublisherName varchar(40) NULL,
@@ -93,6 +93,26 @@ CREATE TABLE try_0."OrderDetails"(
 -- nincs rendelésünk (üres a tábla)
 
 
+---------------------------------------
+
+-- ShippingInfo
+CREATE TABLE try_0."ShippingInfo"(
+	ShippingID integer NOT NULL,
+	CustomerID nchar(5) NOT NULL references try_0."Customers"(customerid),
+	ShipName varchar(40) NULL,
+	ShipAddress varchar(60) NULL,
+	ShipCity varchar(15) NULL,
+	ShipRegion varchar(15) NULL,
+	ShipPostalCode varchar(10) NULL,
+	ShipCountry varchar(15) NULL,
+ CONSTRAINT PK_Shipping_Info PRIMARY KEY
+(
+	ShippingID
+));
+
+-- nincs rendelésünk (üres a tábla)
+
+
 
 -- ============== VIEWS ===============
 
@@ -107,6 +127,24 @@ order by orderdate desc limit 5;
 
 
 -- ============ FUNCTIONS =============
+
+-- Check order possibility
+create or replace function try_0."check_order_possibility" (var_productid integer, var_quantity integer, var_custid char(5)) returns integer as
+$$
+declare var_stock integer; var_unitprice money; var_balance money; var_orderid int;
+begin
+	select unitsinstock, unitprice into var_stock, var_unitprice from try_0."Products" where productid = var_productid;
+	select balance into var_balance from try_0."Customers" where customerid = var_custid;
+	if var_quantity * var_unitprice > var_balance or var_stock < var_quantity then
+		raise notice 'Készlet vagy egyenleg hiba';
+		return 1;
+	else
+		return 0;
+	end if;
+end;
+$$
+language 'plpgsql';
+
 
 -- New Order
 create or replace function try_0."new_order" (var_productid integer, var_quantity integer, var_custid char(5)) returns integer as

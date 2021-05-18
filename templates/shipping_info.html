@@ -2,36 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-    <title>GDJK9Q: Rendelés Feladása</title>
+    <title>GDJK9Q: Shipping Info</title>
 </head>
 <body>
     <div class="container">
 		<h1>Rendelés feladása</h1>
-		<form action="/shipping_info" method="POST">
+		<form action="/order_proc" method="POST">
 			<div class="form-group">
-                <label for="select_product">Terméknév: </label>
-                <select class="form-control" id="select_product" name="product">
-                    {% for rec in product_records %}
-                        <option value= {{ rec.productid }} > {{ rec.productname }} </option>
-                    {% endfor %}
-                </select>
+                <label for="ship_name">Név: </label>
+                <input class="form-control" type="text" id="ship_name" name="name">
 			</div>
 			<div class="form-group">
-                <label for="select_cust">Vásárló: </label>
-                <select class="form-control" id="select_cust" name="customer">
-                    {% for rec in cust_records %}
-                        <option value= {{ rec.customerid }} > {{ rec.companyname }} </option>
-                    {% endfor %}
-                </select>
+                <label for="ship_address">Cím: </label>
+                <input class="form-control" type="text" id="ship_address" name="address">
 			</div>
 			<div class="form-group">
-			    <label for="text_qt">Mennyiség: </label>
-			    <input class="form-control" type="text" id="text_qt" name="qt">
+                <label for="ship_city">Város: </label>
+                <input class="form-control" type="text" id="ship_city" name="city">
+			</div>
+			<div class="form-group">
+                <label for="ship_region">Régió: </label>
+                <input class="form-control" type="text" id="ship_region" name="region">
+			</div>
+			<div class="form-group">
+                <label for="ship_postal_code">Irányítószám: </label>
+                <input class="form-control" type="text" id="ship_postal_code" name="postal_code">
+			</div>
+			<div class="form-group">
+			    <label for="text_country">Ország: </label>
+			    <input class="form-control" type="text" id="text_country" name="country">
 			</div>
 			<button type="submit" class="btn btn-primary">Megrendelés indítása</button>
         </form>
