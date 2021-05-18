@@ -4,12 +4,19 @@
 
 CREATE SCHEMA try_0
     AUTHORIZATION krisz;
-	
+
+
+
+-- ============= SEQUENCES ============
+
+create sequence try_0."seq_orders" start 1 increment 1;
+create sequence try_0."seq_shippings" start 1 increment 1;
+
+
 
 -- ============== TABLES ==============
 
 -- Products
-
 CREATE TABLE try_0."Products"(
 	ProductID int NOT NULL,
 	ProductName varchar(40) NOT NULL,
@@ -57,17 +64,11 @@ INSERT INTO try_0."Customers"  (CustomerID, FirstName, LastName, Country, Balanc
 ---------------------------------------
 
 -- Orders
-create sequence try_0."seq_orders" start 1 increment 1;
 CREATE TABLE try_0."Orders"(
 	OrderID integer NOT NULL,
 	CustomerID nchar(5) NOT NULL references try_0."Customers"(customerid),
 	OrderDate timestamp without time zone DEFAULT now()::timestamp NULL,
-	ShipName varchar(40) NULL,
-	ShipAddress varchar(60) NULL,
-	ShipCity varchar(15) NULL,
-	ShipRegion varchar(15) NULL,
-	ShipPostalCode varchar(10) NULL,
-	ShipCountry varchar(15) NULL,
+	ShippingID int NOT NULL references try_0."ShippingInfo"(ShippingID),
  CONSTRAINT PK_Orders PRIMARY KEY  
 (
 	OrderID 
@@ -128,10 +129,26 @@ order by orderdate desc limit 5;
 
 -- ============ FUNCTIONS =============
 
+-- Get Shipping ID
+create or replace function try_0."get_shipping_id" (var_custid char(5)) returns integer as
+$$
+declare var_stored_id integer;
+begin
+	select shippingid into var_stored_id from try_0."ShippingInfo" where customerid = var_custid;
+	if var_stored_id IS NULL then
+		return nextval('try_0."seq_shippings"');
+	else
+		return var_stored_id;
+	end if;
+end;
+$$
+language 'plpgsql';
+
+
 -- Check order possibility
 create or replace function try_0."check_order_possibility" (var_productid integer, var_quantity integer, var_custid char(5)) returns integer as
 $$
-declare var_stock integer; var_unitprice money; var_balance money; var_orderid int;
+declare var_stock integer; var_unitprice money; var_balance money;
 begin
 	select unitsinstock, unitprice into var_stock, var_unitprice from try_0."Products" where productid = var_productid;
 	select balance into var_balance from try_0."Customers" where customerid = var_custid;
@@ -147,23 +164,32 @@ language 'plpgsql';
 
 
 -- New Order
-create or replace function try_0."new_order" (var_productid integer, var_quantity integer, var_custid char(5)) returns integer as
+create or replace function try_0."new_order" (var_productid integer, var_quantity integer, var_custid char(5), var_shipping_id integer, var_ship_name varchar(40), var_ship_address varchar(60), var_ship_city varchar(15), var_ship_region varchar(15), var_ship_postal_code varchar(10), var_ship_country varchar(15)) returns integer as
 $$
-declare var_stock integer; var_unitprice money; var_balance money; var_orderid int;
-begin  
+declare var_stock integer; var_unitprice money; var_balance money; var_orderid int; var_stored_shipping_id integer;
+begin
 	select unitsinstock, unitprice into var_stock, var_unitprice from try_0."Products" where productid = var_productid;
 	select balance into var_balance from try_0."Customers" where customerid = var_custid;
-	if var_quantity * var_unitprice > var_balance or var_stock < var_quantity then
-		raise notice 'Készlet vagy egyenleg hiba';
-		return 1;
+
+	update try_0."Customers" set balance = balance - var_quantity * var_unitprice where customerid = var_custid;
+	update try_0."Products" set unitsinstock = unitsinstock - var_quantity where productid = var_productid;
+
+	select shippingid into var_stored_shipping_id from try_0."ShippingInfo" where customerid = var_custid;
+	if var_stored_shipping_id IS NULL then
+		insert into try_0."ShippingInfo" (shippingid, customerid, shipname, shipaddress, shipcity, shipregion, shippostalcode, shipcountry)
+		values (var_shipping_id, var_custid, var_ship_name, var_ship_address, var_ship_city, var_ship_region, var_ship_postal_code, var_ship_country);
 	else
-		update try_0."Customers" set balance = balance - var_quantity * var_unitprice where customerid = var_custid;
-		var_orderid := nextval('seq_orders');
-		insert into try_0."Orders" (orderid, customerid) values (var_orderid, var_custid);
-		insert into try_0."OrderDetails" (orderid, productid, unitprice, quantity) values (var_orderid, var_productid, var_unitprice, var_quantity);
-		update try_0."Products" set unitsinstock = unitsinstock - var_quantity where productid = var_productid;
-		return 0;	
+		update try_0."ShippingInfo"
+		set (shipname, shipaddress, shipcity, shipregion, shippostalcode, shipcountry)
+			= (var_ship_name, var_ship_address, var_ship_city, var_ship_region, var_ship_postal_code, var_ship_country)
+		where customerid = var_custid;
 	end if;
+
+	var_orderid := nextval('try_0."seq_orders"');
+	insert into try_0."Orders" (orderid, customerid, shippingid) values (var_orderid, var_custid, var_shipping_id);
+	insert into try_0."OrderDetails" (orderid, productid, unitprice, quantity) values (var_orderid, var_productid, var_unitprice, var_quantity);
+
+	return 0;
 end;
 $$
 language 'plpgsql';

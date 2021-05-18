@@ -91,16 +91,29 @@ def get_customers():
         return []
 
 
-def check_order_possibility(product, quantity, customer):
+# noinspection SqlResolve
+def check_order_possibility(product_id, quantity, customer_id):
     sql = """select try_0."check_order_possibility"(%s, %s, %s);"""
     try:
-        _cursor.execute(sql, (product, quantity, customer))
+        _cursor.execute(sql, (product_id, quantity, customer_id))
         row = _cursor.fetchone()
         success = row[0] == 0
         return success
     except (Exception, Error) as ex:
         logging.error("Query or Order error: ", ex)
         return False
+
+
+# noinspection SqlResolve
+def get_shipping_id(customer_id):
+    sql = """select try_0."get_shipping_id"(%s);"""
+    try:
+        _cursor.execute(sql, (customer_id,))
+        row = _cursor.fetchone()
+        return row[0]
+    except (Exception, Error) as ex:
+        logging.error("Query or Order error: ", ex)
+        return None
 
 
 # noinspection SqlResolve
