@@ -31,15 +31,15 @@ CREATE TABLE try_0."Products"(
 
 -- 5 termék
 INSERT INTO  try_0."Products" (ProductID, ProductName, PublisherID, PublisherName, UnitPrice, UnitsInStock) 
-VALUES (1, 'Gaia Pro 2021', 2, 'Procedural Worlds', 258.17, 5);
+VALUES (1, 'Gaia Pro 2021', 2, 'Procedural Worlds', 258.17, 100);
 INSERT INTO  try_0."Products" (ProductID, ProductName, PublisherID, PublisherName, UnitPrice, UnitsInStock) 
-VALUES (2, 'POLYGON Fantasy Kingdom', 1, 'Synty Studios', 250.13, 12);
+VALUES (2, 'POLYGON Fantasy Kingdom', 1, 'Synty Studios', 250.13, 100);
 INSERT INTO  try_0."Products" (ProductID, ProductName, PublisherID, PublisherName, UnitPrice, UnitsInStock) 
-VALUES (3, 'POLYGON Dungeon Realms', 1, 'Synty Studios', 133.99, 15);
+VALUES (3, 'POLYGON Dungeon Realms', 1, 'Synty Studios', 133.99, 100);
 INSERT INTO  try_0."Products" (ProductID, ProductName, PublisherID, PublisherName, UnitPrice, UnitsInStock) 
-VALUES (4, 'Mega Animations Pack', 3, 'Keving Iglesias', 80.40, 20);
+VALUES (4, 'Mega Animations Pack', 3, 'Keving Iglesias', 80.40, 100);
 INSERT INTO  try_0."Products" (ProductID, ProductName, PublisherID, PublisherName, UnitPrice, UnitsInStock) 
-VALUES (5, 'Polyquest Worlds Full Pack Vol.1', 4, 'POLYBOX', 267.99, 1);
+VALUES (5, 'Polyquest Worlds Full Pack Vol.1', 4, 'POLYBOX', 267.99, 100);
 
 
 ------------------------------------
@@ -168,6 +168,7 @@ create or replace function try_0."new_order" (var_productid integer, var_quantit
 $$
 declare var_stock integer; var_unitprice money; var_balance money; var_orderid int; var_stored_shipping_id integer;
 begin
+	raise notice 'Init: % % % % % % % % % %', var_productid, var_quantity, var_custid, var_shipping_id, var_ship_name, var_ship_address, var_ship_city, var_ship_region, var_ship_postal_code, var_ship_country;
 	select unitsinstock, unitprice into var_stock, var_unitprice from try_0."Products" where productid = var_productid;
 	select balance into var_balance from try_0."Customers" where customerid = var_custid;
 
@@ -176,9 +177,11 @@ begin
 
 	select shippingid into var_stored_shipping_id from try_0."ShippingInfo" where customerid = var_custid;
 	if var_stored_shipping_id IS NULL then
+		raise notice 'Insert New Shipping ID';
 		insert into try_0."ShippingInfo" (shippingid, customerid, shipname, shipaddress, shipcity, shipregion, shippostalcode, shipcountry)
 		values (var_shipping_id, var_custid, var_ship_name, var_ship_address, var_ship_city, var_ship_region, var_ship_postal_code, var_ship_country);
 	else
+		raise notice 'Update Existing Shipping ID';
 		update try_0."ShippingInfo"
 		set (shipname, shipaddress, shipcity, shipregion, shippostalcode, shipcountry)
 			= (var_ship_name, var_ship_address, var_ship_city, var_ship_region, var_ship_postal_code, var_ship_country)

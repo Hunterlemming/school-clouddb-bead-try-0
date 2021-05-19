@@ -6,18 +6,19 @@ from private.data import db_login
 logging.basicConfig(level=logging.INFO)
 
 _schema = "try_0"
+_connection = None
 _cursor = None
 
 
 def access_database():
-    global _cursor
+    global _cursor, _connection
 
     try:
-        connection = psycopg2.connect(user=db_login['user'], password=db_login['password'],
+        _connection = psycopg2.connect(user=db_login['user'], password=db_login['password'],
                                       host=db_login['host'], port=db_login['port'],
                                       database=db_login['database'],
                                       )
-        _cursor = connection.cursor()
+        _cursor = _connection.cursor()
         return True
     except (Exception, Error) as ex:
         logging.error("Connection Error: ", ex)
@@ -92,6 +93,27 @@ def get_customers():
 
 
 # noinspection SqlResolve
+def get_shipping_info(customer_id):
+    sql = f"""select * from {_schema}."ShippingInfo" where customerid='{customer_id}';"""
+    try:
+        _cursor.execute(sql)
+        row = _cursor.fetchone()
+        if row is None:
+            return {}
+        return {
+            'ship_name': row[2],
+            'ship_address': row[3],
+            'ship_city': row[4],
+            'ship_region': row[5],
+            'ship_postal_code': row[6],
+            'ship_country': row[7]
+        }
+    except (Exception, Error) as ex:
+        logging.error("Shipping-Query error: ", ex)
+        return {}
+
+
+# noinspection SqlResolve
 def check_order_possibility(product_id, quantity, customer_id):
     sql = """select try_0."check_order_possibility"(%s, %s, %s);"""
     try:
@@ -100,7 +122,7 @@ def check_order_possibility(product_id, quantity, customer_id):
         success = row[0] == 0
         return success
     except (Exception, Error) as ex:
-        logging.error("Query or Order error: ", ex)
+        logging.error("Function (check_order_possibility) error: ", ex)
         return False
 
 
@@ -112,18 +134,34 @@ def get_shipping_id(customer_id):
         row = _cursor.fetchone()
         return row[0]
     except (Exception, Error) as ex:
-        logging.error("Query or Order error: ", ex)
+        logging.error("Function (get_shipping_id) error: ", ex)
         return None
 
 
 # noinspection SqlResolve
-def set_new_order(product, quantity, costumer):
-    sql = """select try_0."new_order"(%s, %s, %s);"""
+def set_new_order(transaction_info):
+    global _connection
+
+    sql = """select try_0."new_order"(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"""
     try:
-        _cursor.execute(sql, (product, quantity, costumer))
-        row = _cursor.fetchone()
-        success = row[0]
-        return success
+        with _connection:
+            _cursor.execute(sql, (
+                transaction_info['product_id'],
+                transaction_info['quantity'],
+                transaction_info['customer_id'],
+                transaction_info['shipping_id'],
+                transaction_info['ship_name'],
+                transaction_info['ship_address'],
+                transaction_info['ship_city'],
+                transaction_info['ship_region'],
+                transaction_info['ship_postal_code'],
+                transaction_info['ship_country']
+                ))
+            row = _cursor.fetchone()
+            for notice in _connection.notices:
+                print(notice)
+            success = row[0]
+            return success
     except (Exception, Error) as ex:
-        logging.error("Query or Order error: ", ex)
+        logging.error("Function (set_new_order) error: ", ex)
         return False

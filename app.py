@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
 from database import access_database, get_orders, get_products, get_customers, set_new_order, check_order_possibility, \
-    get_shipping_id
+    get_shipping_id, get_shipping_info
 
 app = Flask(__name__)
 
@@ -16,11 +16,11 @@ def order_form():
 @app.route('/order_proc', methods=['POST', 'GET'])
 def order_proc():
     if request.method == 'POST':
-        success = set_new_order(
+        set_new_order(
             {
-                'product': _transaction_info['product_id'],
+                'product_id': _transaction_info['product_id'],
                 'quantity': _transaction_info['quantity'],
-                'customer': _transaction_info['customer_id'],
+                'customer_id': _transaction_info['customer_id'],
                 'shipping_id': get_shipping_id(_transaction_info['customer_id']),
                 'ship_name': request.form['name'],
                 'ship_address': request.form['address'],
@@ -30,10 +30,7 @@ def order_proc():
                 'ship_country': request.form['country'],
             }
         )
-        if success:
-            return render_template('order_list.html', success=success, order_records=get_orders())
-        else:
-            return render_template('order_form.html', product_records=get_products(), cust_records=get_customers())
+        return render_template('order_list.html', success=0, order_records=get_orders())
     else:
         return render_template('order_list.html', order_records=get_orders())
 
@@ -46,14 +43,13 @@ def shipping_info():
         'quantity': request.form['qt'],
         'customer_id': request.form['customer']
     }
-    print(_transaction_info)
     success = check_order_possibility(
         _transaction_info['product_id'],
         _transaction_info['quantity'],
         _transaction_info['customer_id']
     )
     if success:
-        return render_template('shipping_info.html')
+        return render_template('shipping_info.html', ship_info=get_shipping_info(_transaction_info['customer_id']))
     else:
         return render_template('order_form.html',
                                product_records=get_products(), cust_records=get_customers(), success=False)

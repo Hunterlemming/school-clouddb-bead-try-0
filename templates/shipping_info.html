@@ -14,27 +14,27 @@
 		<form action="/order_proc" method="POST">
 			<div class="form-group">
                 <label for="ship_name">Név: </label>
-                <input class="form-control" type="text" id="ship_name" name="name">
+                <input class="form-control" type="text" id="ship_name" name="name" value="{{ ship_info.ship_name }}">
 			</div>
 			<div class="form-group">
                 <label for="ship_address">Cím: </label>
-                <input class="form-control" type="text" id="ship_address" name="address">
+                <input class="form-control" type="text" id="ship_address" name="address" value="{{ ship_info.ship_address }}">
 			</div>
 			<div class="form-group">
                 <label for="ship_city">Város: </label>
-                <input class="form-control" type="text" id="ship_city" name="city">
+                <input class="form-control" type="text" id="ship_city" name="city" value="{{ ship_info.ship_city }}">
 			</div>
 			<div class="form-group">
                 <label for="ship_region">Régió: </label>
-                <input class="form-control" type="text" id="ship_region" name="region">
+                <input class="form-control" type="text" id="ship_region" name="region" value="{{ ship_info.ship_region }}">
 			</div>
 			<div class="form-group">
                 <label for="ship_postal_code">Irányítószám: </label>
-                <input class="form-control" type="text" id="ship_postal_code" name="postal_code">
+                <input class="form-control" type="text" id="ship_postal_code" name="postal_code" value="{{ ship_info.ship_postal_code }}">
 			</div>
 			<div class="form-group">
 			    <label for="ship_country">Ország: </label>
-			    <input class="form-control" type="text" id="ship_country" name="country">
+			    <input class="form-control" type="text" id="ship_country" name="country" value="{{ ship_info.ship_country }}">
 			</div>
 			<button type="submit" class="btn btn-primary">Megrendelés indítása</button>
         </form>
