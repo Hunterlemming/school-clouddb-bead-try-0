@@ -5,7 +5,7 @@ from private.data import db_login
 
 logging.basicConfig(level=logging.INFO)
 
-_schema = "try_0"
+_schema = "public"
 _connection = None
 _cursor = None
 
@@ -27,7 +27,7 @@ def access_database():
 
 # noinspection SqlResolve
 def get_orders():
-    sql = f"""select * from {_schema}."last_orders";"""
+    sql = f"""select * from last_orders;"""
     try:
         _cursor.execute(sql)
         order_rows = _cursor.fetchall()
@@ -54,7 +54,7 @@ def get_orders():
 
 # noinspection SqlResolve
 def get_products():
-    sql = f"""select productid, productname from {_schema}."Products" order by productname;"""
+    sql = f"""select productid, productname from Products order by productname;"""
     try:
         _cursor.execute(sql)
         product_rows = _cursor.fetchall()
@@ -74,7 +74,7 @@ def get_products():
 
 # noinspection SqlResolve
 def get_customers():
-    sql = f"""select customerid, firstname, lastname from {_schema}."Customers" order by firstname;"""
+    sql = f"""select customerid, firstname, lastname from Customers order by firstname;"""
     try:
         _cursor.execute(sql)
         customer_rows = _cursor.fetchall()
@@ -94,7 +94,7 @@ def get_customers():
 
 # noinspection SqlResolve
 def get_shipping_info(customer_id):
-    sql = f"""select * from {_schema}."ShippingInfo" where customerid='{customer_id}';"""
+    sql = f"""select * from ShippingInfo where customerid='{customer_id}';"""
     try:
         _cursor.execute(sql)
         row = _cursor.fetchone()
@@ -115,7 +115,7 @@ def get_shipping_info(customer_id):
 
 # noinspection SqlResolve
 def check_order_possibility(product_id, quantity, customer_id):
-    sql = """select try_0."check_order_possibility"(%s, %s, %s);"""
+    sql = """select check_order_possibility(%s, %s, %s);"""
     try:
         _cursor.execute(sql, (product_id, quantity, customer_id))
         row = _cursor.fetchone()
@@ -128,7 +128,7 @@ def check_order_possibility(product_id, quantity, customer_id):
 
 # noinspection SqlResolve
 def get_shipping_id(customer_id):
-    sql = """select try_0."get_shipping_id"(%s);"""
+    sql = """select get_shipping_id(%s);"""
     try:
         _cursor.execute(sql, (customer_id,))
         row = _cursor.fetchone()
@@ -142,7 +142,7 @@ def get_shipping_id(customer_id):
 def set_new_order(transaction_info):
     global _connection
 
-    sql = """select try_0."new_order"(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"""
+    sql = """select new_order(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"""
     try:
         with _connection:
             _cursor.execute(sql, (
