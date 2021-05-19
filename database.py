@@ -15,9 +15,9 @@ def access_database():
 
     try:
         _connection = psycopg2.connect(user=db_login['user'], password=db_login['password'],
-                                      host=db_login['host'], port=db_login['port'],
-                                      database=db_login['database'],
-                                      )
+                                       host=db_login['host'], port=db_login['port'],
+                                       database=db_login['database'],
+                                       )
         _cursor = _connection.cursor()
         return True
     except (Exception, Error) as ex:
@@ -44,7 +44,7 @@ def get_orders():
                     'quantity': row[6],
                     'value': row[7],
                     'unitsinstock': row[8]
-                 }
+                }
             )
         return order_list
     except (Exception, Error) as ex:
@@ -156,7 +156,7 @@ def set_new_order(transaction_info):
                 transaction_info['ship_region'],
                 transaction_info['ship_postal_code'],
                 transaction_info['ship_country']
-                ))
+            ))
             row = _cursor.fetchone()
             for notice in _connection.notices:
                 print(notice)
