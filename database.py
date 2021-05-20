@@ -117,10 +117,11 @@ def get_shipping_info(customer_id):
 def check_order_possibility(product_id, quantity, customer_id):
     sql = """select check_order_possibility(%s, %s, %s);"""
     try:
-        _cursor.execute(sql, (product_id, quantity, customer_id))
-        row = _cursor.fetchone()
-        success = row[0] == 0
-        return success
+        with _connection:
+            _cursor.execute(sql, (product_id, quantity, customer_id))
+            row = _cursor.fetchone()
+            success = row[0] == 0
+            return success
     except (Exception, Error) as ex:
         logging.error("Function (check_order_possibility) error: ", ex)
         return False
@@ -128,11 +129,14 @@ def check_order_possibility(product_id, quantity, customer_id):
 
 # noinspection SqlResolve
 def get_shipping_id(customer_id):
+    global _connection
+
     sql = """select get_shipping_id(%s);"""
     try:
-        _cursor.execute(sql, (customer_id,))
-        row = _cursor.fetchone()
-        return row[0]
+        with _connection:
+            _cursor.execute(sql, (customer_id,))
+            row = _cursor.fetchone()
+            return row[0]
     except (Exception, Error) as ex:
         logging.error("Function (get_shipping_id) error: ", ex)
         return None

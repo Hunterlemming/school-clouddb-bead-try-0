@@ -5,11 +5,14 @@ from database import access_database, get_orders, get_products, get_customers, s
 app = Flask(__name__)
 
 _transaction_info = {}
+_initialized = False
 
 
 @app.route('/')
 @app.route('/order_form', methods=['POST', 'GET'])
 def order_form():
+    if not _initialized:
+        initialize()
     return render_template('order_form.html', product_records=get_products(), cust_records=get_customers())
 
 
@@ -56,12 +59,14 @@ def shipping_info():
 
 
 def initialize():
-    global _transaction_info
+    global _transaction_info, _initialized
     _transaction_info = {}
 
-
-if __name__ == '__main__':
-    initialize()
     connection_was_a_success = access_database()
-    if connection_was_a_success:
-        app.run(debug=True)
+    _initialized = True
+    return connection_was_a_success
+
+
+if __name__ == "__main__":
+    if initialize():
+        app.run()
